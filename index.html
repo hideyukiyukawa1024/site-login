@@ -2,44 +2,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login com Google - Sistema RH</title>
+  <title>Sistema RH - Login</title>
 </head>
 
 <body>
-  <h1>Sistema RH - Login</h1>
+  <h1>Sistema RH</h1>
 
-  <!-- Área de Login -->
+  <!-- LOGIN -->
   <div id="login-area">
     <button id="btnLoginGoogle">Entrar com Google</button>
   </div>
 
-  <!-- Área quando usuário está logado -->
+  <!-- ÁREA LOGADO -->
   <div id="user-area" style="display:none; margin-top:20px;">
-    <h2>Dados do Usuário</h2>
-    <p><strong>Nome (Google):</strong> <span id="user-name"></span></p>
-    <p><strong>Email (Google):</strong> <span id="user-email"></span></p>
-    <img id="user-photo" width="90" style="border-radius:50%;"><br><br>
+    <h2>Dados do Funcionário</h2>
 
-    <h3>Dados na planilha db-hope</h3>
-    <div id="sheet-data">
-      <!-- Aqui vamos mostrar os dados da planilha -->
-    </div>
+    <table border="1" cellpadding="5">
+      <tr><td><b>登録氏名</b></td><td id="d_reg"></td></tr>
+      <tr><td><b>在留カード番号</b></td><td id="d_card"></td></tr>
+      <tr><td><b>生年月日</b></td><td id="d_birth"></td></tr>
+      <tr><td><b>在留資格</b></td><td id="d_status"></td></tr>
+      <tr><td><b>在留有効期限</b></td><td id="d_exp"></td></tr>
+      <tr><td><b>住所</b></td><td id="d_addr"></td></tr>
+      <tr><td><b>連絡先</b></td><td id="d_tel"></td></tr>
+      <tr><td><b>入社日</b></td><td id="d_ingresso"></td></tr>
+      <tr><td><b>フルネーム</b></td><td id="d_full"></td></tr>
+      <tr><td><b>Email</b></td><td id="d_email"></td></tr>
+    </table>
 
     <br>
+    <button onclick="location.href='folga.html'">Solicitar Folga</button>
+    <br><br>
     <button id="btnLogout">Sair</button>
   </div>
 
+  <!-- FIREBASE -->
   <script type="module">
-    // ============================
-    // IMPORTAÇÕES DO FIREBASE
-    // ============================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    // ============================
-    // CONFIGURAÇÃO DO FIREBASE
-    // ============================
     const firebaseConfig = {
       apiKey: "AIzaSyDTyR6gVjAzC8BA3Y223v6819Pdwjsy8bQ",
       authDomain: "app-rh-hope.firebaseapp.com",
@@ -47,129 +49,45 @@
       storageBucket: "app-rh-hope.firebasestorage.app",
       messagingSenderId: "1060676399696",
       appId: "1:1060676399696:web:edb5e407253bd982709755",
-      measurementId: "G-64CT6CWBTW"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // 🔗 URL da API do Apps Script (COLE A SUA AQUI)
-    const API_URL = "https://script.google.com/macros/s/AKfycbzgFn3u37vZyrw1JzZJGPa8Ba19SxGqGJBquIUdx_7MqQg-jCqzZfCpv18JXcXk68xJmQ/exec";
+    const API_USERS = "https://script.google.com/macros/s/AKfycbzgFn3u37vZyrw1JzZJGPa8Ba19SxGqGJBquIUdx_7MqQg-jCqzZfCpv18JXcXk68xJmQ/exec";
 
-    // ============================
-    // LOGIN
-    // ============================
-    document.getElementById("btnLoginGoogle").onclick = function () {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          console.log("Usuário logado:", result.user);
-        })
-        .catch((error) => {
-          console.error("Erro no login:", error);
-          alert("Erro no login: " + error.message);
-        });
-    };
+    document.getElementById("btnLoginGoogle").onclick = () => signInWithPopup(auth, provider);
 
-    // ============================
-    // MONITORAR LOGIN
-    // ============================
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById("login-area").style.display = "none";
         document.getElementById("user-area").style.display = "block";
 
-        document.getElementById("user-name").textContent = user.displayName;
-        document.getElementById("user-email").textContent = user.email;
-        document.getElementById("user-photo").src = user.photoURL || "";
+        const resp = await fetch(API_USERS + "?email=" + user.email);
+        const json = await resp.json();
 
-        // Depois do login, busca dados na planilha
-        await buscarDadosNaPlanilha(user.email);
+        const d = json.data;
+
+        document.getElementById("d_reg").innerHTML = d["派遣先登録名"];
+        document.getElementById("d_card").innerHTML = d["在留カード番号"];
+        document.getElementById("d_birth").innerHTML = d["生年月日"];
+        document.getElementById("d_status").innerHTML = d["在留資格"];
+        document.getElementById("d_exp").innerHTML = d["在留・有効期限"];
+        document.getElementById("d_addr").innerHTML = d["住所"];
+        document.getElementById("d_tel").innerHTML = d["TEL"];
+        document.getElementById("d_ingresso").innerHTML = d["INGRESSO"];
+        document.getElementById("d_full").innerHTML = d["フルネーム"];
+        document.getElementById("d_email").innerHTML = d["EMAIL"];
 
       } else {
         document.getElementById("login-area").style.display = "block";
         document.getElementById("user-area").style.display = "none";
-        document.getElementById("sheet-data").innerHTML = "";
       }
     });
 
-    // ============================
-    // LOGOUT
-    // ============================
-    document.getElementById("btnLogout").onclick = function () {
-      signOut(auth);
-    };
-
-    // ============================
-    // BUSCAR DADOS NA PLANILHA
-    // ============================
-    async function buscarDadosNaPlanilha(email) {
-      try {
-        const resp = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: "email=" + encodeURIComponent(email)
-        });
-
-        const json = await resp.json();
-        console.log("Resposta da planilha:", json);
-
-        const div = document.getElementById("sheet-data");
-
-        if (!json.success) {
-          div.innerHTML = `<p style="color:red;">Erro na API: ${json.error}</p>`;
-          return;
-        }
-
-        if (!json.found) {
-          div.innerHTML = `<p style="color:red;">Seu email não está cadastrado na planilha db-hope.</p>`;
-          return;
-        }
-
-        // Montar HTML com alguns campos importantes
-        const d = json.data;
-
-        // Aqui você escolhe o que mostrar (nomes exatos dos cabeçalhos)
-        // Exemplo de alguns possíveis:
-        const camposPrincipais = [
-          "No",
-          "在籍",
-          "派遣先企業・工場名",
-          "EMPRESA",
-          "TIPO DE SERVICO",
-          "DEPARTAMENTO SECAO",
-          "TURNO",
-          "TEL",
-          "MEIO DE TRANSPORTE",
-          "CNH",
-          "EMAIL"
-        ];
-
-        let html = "<table border='1' cellpadding='5' cellspacing='0'>";
-
-        camposPrincipais.forEach(campo => {
-          if (d[campo] !== undefined) {
-            html += `
-              <tr>
-                <td><strong>${campo}</strong></td>
-                <td>${d[campo]}</td>
-              </tr>
-            `;
-          }
-        });
-
-        html += "</table>";
-
-        div.innerHTML = html;
-
-      } catch (err) {
-        console.error("Erro ao buscar dados na planilha:", err);
-        document.getElementById("sheet-data").innerHTML =
-          `<p style="color:red;">Erro ao consultar a planilha.</p>`;
-      }
-    }
+    document.getElementById("btnLogout").onclick = () => signOut(auth);
   </script>
+
 </body>
 </html>
