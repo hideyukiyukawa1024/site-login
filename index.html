@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Sistema RH - HOPE</title>
-
-  <!-- FONTES -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: #e9f3ff;   /* Azul-claro bem suave */
+      background: #e9f3ff;
       margin: 0;
       padding: 0;
     }
@@ -82,24 +80,11 @@
       color: white;
     }
 
-    .btn-danger:hover {
-      background: #c82333;
-    }
-
-    /* MOBILE */
+    /* Mobile */
     @media (max-width: 600px) {
-      h1 {
-        font-size: 22px;
-      }
-
-      td {
-        padding: 8px;
-        font-size: 14px;
-      }
-
-      .card {
-        padding: 15px;
-      }
+      h1 { font-size: 22px; }
+      td { padding: 8px; font-size: 14px; }
+      .card { padding: 15px; }
     }
   </style>
 </head>
@@ -117,7 +102,7 @@
 
     <!-- LOGADO -->
     <div id="user-area" class="card" style="display:none;">
-      <h2 style="color:#0d6efd; margin-bottom:10px;">Dados do Funcionário</h2>
+      <h2 style="color:#0d6efd;">Dados do Funcionário</h2>
 
       <table>
         <tr><td>登録氏名</td><td id="d_reg"></td></tr>
@@ -127,7 +112,7 @@
         <tr><td>在留有効期限</td><td id="d_exp"></td></tr>
         <tr><td>住所</td><td id="d_addr"></td></tr>
         <tr><td>連絡先</td><td id="d_tel"></td></tr>
-        <tr><td>入社日</td><td id="d_ingresso"></td></tr>
+        <tr><td>入社日</td><td id="d_ing"></td></tr>
         <tr><td>フルネーム</td><td id="d_full"></td></tr>
         <tr><td>Email</td><td id="d_email"></td></tr>
       </table>
@@ -169,16 +154,16 @@
         const json = await resp.json();
         const d = json.data;
 
-        document.getElementById("d_reg").innerHTML      = d["派遣先登録名"];
-        document.getElementById("d_card").innerHTML     = d["在留カード番号"];
-        document.getElementById("d_birth").innerHTML    = d["生年月日"];
-        document.getElementById("d_status").innerHTML   = d["在留資格"];
-        document.getElementById("d_exp").innerHTML      = d["在留有効期限"];
-        document.getElementById("d_addr").innerHTML     = d["住所"];
-        document.getElementById("d_tel").innerHTML      = d["TEL"];
-        document.getElementById("d_ingresso").innerHTML = d["INGRESSO"];
-        document.getElementById("d_full").innerHTML     = d["フルネーム"];
-        document.getElementById("d_email").innerHTML    = d["EMAIL"];
+        document.getElementById("d_reg").innerHTML  = d.col4;
+        document.getElementById("d_card").innerHTML = d.col5;
+        document.getElementById("d_birth").innerHTML= d.col7;
+        document.getElementById("d_status").innerHTML = d.col10;
+        document.getElementById("d_exp").innerHTML = d.col11;
+        document.getElementById("d_addr").innerHTML = d.col14;
+        document.getElementById("d_tel").innerHTML  = d.col15;
+        document.getElementById("d_ing").innerHTML  = d.col31;
+        document.getElementById("d_full").innerHTML = d.col84;
+        document.getElementById("d_email").innerHTML = d.col106;
       }
     });
 
