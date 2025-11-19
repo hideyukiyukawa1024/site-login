@@ -69,16 +69,17 @@
 
         const d = json.data;
 
-        document.getElementById("d_reg").innerHTML = d["派遣先登録名"];
-        document.getElementById("d_card").innerHTML = d["在留カード番号"];
-        document.getElementById("d_birth").innerHTML = d["生年月日"];
-        document.getElementById("d_status").innerHTML = d["在留資格"];
-        document.getElementById("d_exp").innerHTML = d["在留・有効期限"];
-        document.getElementById("d_addr").innerHTML = d["住所"];
-        document.getElementById("d_tel").innerHTML = d["TEL"];
-        document.getElementById("d_ingresso").innerHTML = d["INGRESSO"];
-        document.getElementById("d_full").innerHTML = d["フルネーム"];
-        document.getElementById("d_email").innerHTML = d["EMAIL"];
+document.getElementById("d_reg").innerHTML      = d["派遣先登録名"];
+document.getElementById("d_card").innerHTML     = d["在留カード番号"];
+document.getElementById("d_birth").innerHTML    = d["生年月日"];
+document.getElementById("d_status").innerHTML   = d["在留資格"];
+document.getElementById("d_exp").innerHTML      = d["在留・有効期限"];
+document.getElementById("d_addr").innerHTML     = d["住所"];
+document.getElementById("d_tel").innerHTML      = d["TEL"];
+document.getElementById("d_ingresso").innerHTML = d["INGRESSO"];
+document.getElementById("d_full").innerHTML     = d["フルネーム"];
+document.getElementById("d_email").innerHTML    = d["EMAIL"];
+
 
       } else {
         document.getElementById("login-area").style.display = "block";
