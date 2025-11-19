@@ -14,25 +14,32 @@
   </div>
 
   <!-- Área quando usuário está logado -->
-  <div id="user-area" style="display:none;">
-    <p>Bem-vindo, <span id="user-name"></span>!</p>
-    <p>Email: <span id="user-email"></span></p>
-    <img id="user-photo" width="90" style="border-radius:50%;">
-    <br><br>
+  <div id="user-area" style="display:none; margin-top:20px;">
+    <h2>Dados do Usuário</h2>
+    <p><strong>Nome (Google):</strong> <span id="user-name"></span></p>
+    <p><strong>Email (Google):</strong> <span id="user-email"></span></p>
+    <img id="user-photo" width="90" style="border-radius:50%;"><br><br>
+
+    <h3>Dados na planilha db-hope</h3>
+    <div id="sheet-data">
+      <!-- Aqui vamos mostrar os dados da planilha -->
+    </div>
+
+    <br>
     <button id="btnLogout">Sair</button>
   </div>
 
   <script type="module">
-    /* ============================
-       IMPORTAÇÕES DO FIREBASE
-       ============================ */
+    // ============================
+    // IMPORTAÇÕES DO FIREBASE
+    // ============================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    /* ============================
-       CONFIGURAÇÃO DO SEU PROJETO
-       ============================ */
+    // ============================
+    // CONFIGURAÇÃO DO FIREBASE
+    // ============================
     const firebaseConfig = {
       apiKey: "AIzaSyDTyR6gVjAzC8BA3Y223v6819Pdwjsy8bQ",
       authDomain: "app-rh-hope.firebaseapp.com",
@@ -43,16 +50,16 @@
       measurementId: "G-64CT6CWBTW"
     };
 
-    /* ============================
-       INICIALIZA O FIREBASE
-       ============================ */
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    /* ============================
-       LOGIN
-       ============================ */
+    // 🔗 URL da API do Apps Script (COLE A SUA AQUI)
+    const API_URL = "https://script.google.com/macros/s/AKfycbzgFn3u37vZyrw1JzZJGPa8Ba19SxGqGJBquIUdx_7MqQg-jCqzZfCpv18JXcXk68xJmQ/exec";
+
+    // ============================
+    // LOGIN
+    // ============================
     document.getElementById("btnLoginGoogle").onclick = function () {
       signInWithPopup(auth, provider)
         .then((result) => {
@@ -64,33 +71,105 @@
         });
     };
 
-    /* ============================
-       MONITORAR LOGIN
-       ============================ */
-    onAuthStateChanged(auth, (user) => {
+    // ============================
+    // MONITORAR LOGIN
+    // ============================
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Se está logado
         document.getElementById("login-area").style.display = "none";
         document.getElementById("user-area").style.display = "block";
 
         document.getElementById("user-name").textContent = user.displayName;
         document.getElementById("user-email").textContent = user.email;
-        document.getElementById("user-photo").src = user.photoURL;
+        document.getElementById("user-photo").src = user.photoURL || "";
+
+        // Depois do login, busca dados na planilha
+        await buscarDadosNaPlanilha(user.email);
 
       } else {
-        // Se NÃO está logado
         document.getElementById("login-area").style.display = "block";
         document.getElementById("user-area").style.display = "none";
+        document.getElementById("sheet-data").innerHTML = "";
       }
     });
 
-    /* ============================
-       LOGOUT
-       ============================ */
+    // ============================
+    // LOGOUT
+    // ============================
     document.getElementById("btnLogout").onclick = function () {
       signOut(auth);
     };
-  </script>
 
+    // ============================
+    // BUSCAR DADOS NA PLANILHA
+    // ============================
+    async function buscarDadosNaPlanilha(email) {
+      try {
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "email=" + encodeURIComponent(email)
+        });
+
+        const json = await resp.json();
+        console.log("Resposta da planilha:", json);
+
+        const div = document.getElementById("sheet-data");
+
+        if (!json.success) {
+          div.innerHTML = `<p style="color:red;">Erro na API: ${json.error}</p>`;
+          return;
+        }
+
+        if (!json.found) {
+          div.innerHTML = `<p style="color:red;">Seu email não está cadastrado na planilha db-hope.</p>`;
+          return;
+        }
+
+        // Montar HTML com alguns campos importantes
+        const d = json.data;
+
+        // Aqui você escolhe o que mostrar (nomes exatos dos cabeçalhos)
+        // Exemplo de alguns possíveis:
+        const camposPrincipais = [
+          "No",
+          "在籍",
+          "派遣先企業・工場名",
+          "EMPRESA",
+          "TIPO DE SERVICO",
+          "DEPARTAMENTO SECAO",
+          "TURNO",
+          "TEL",
+          "MEIO DE TRANSPORTE",
+          "CNH",
+          "EMAIL"
+        ];
+
+        let html = "<table border='1' cellpadding='5' cellspacing='0'>";
+
+        camposPrincipais.forEach(campo => {
+          if (d[campo] !== undefined) {
+            html += `
+              <tr>
+                <td><strong>${campo}</strong></td>
+                <td>${d[campo]}</td>
+              </tr>
+            `;
+          }
+        });
+
+        html += "</table>";
+
+        div.innerHTML = html;
+
+      } catch (err) {
+        console.error("Erro ao buscar dados na planilha:", err);
+        document.getElementById("sheet-data").innerHTML =
+          `<p style="color:red;">Erro ao consultar a planilha.</p>`;
+      }
+    }
+  </script>
 </body>
 </html>
